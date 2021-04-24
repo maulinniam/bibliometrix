@@ -18,6 +18,7 @@ networkPlot(
   label.n = NULL,
   halo = FALSE,
   cluster = "louvain",
+  community.repulsion = 0.1,
   vos.path = NULL,
   size = 3,
   size.cex = FALSE,
@@ -68,6 +69,8 @@ Inclusion, Salton or Equivalence similarity index respectively. The default is t
 
 \item{cluster}{is a character. It indicates the type of cluster to perform among ("none", optimal", "louvain","infomap","edge_betweenness","walktrap", "spinglass", "leading_eigen", "fast_greedy").}
 
+\item{community.repulsion}{is a real. It indicates the repulsion force among network communities. It is a real number between 0 and 1. Default is \code{community.repulsion = 0.1}.}
+
 \item{vos.path}{is a character indicating the full path whre VOSviewer.jar is located.}
 
 \item{size}{is integer. It defines the size of each vertex. Default is \code{size=3}.}
@@ -111,7 +114,7 @@ The function \code{\link{networkPlot}} can plot a bibliographic network previous
 \examples{
 # EXAMPLE Keywordd co-occurrence network
 
-data(management)
+data(management, package = "bibliometrixData")
 
 NetMatrix <- biblioNetwork(management, analysis = "co-occurrences", 
 network = "keywords", sep = ";")

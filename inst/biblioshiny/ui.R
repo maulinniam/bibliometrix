@@ -7,7 +7,7 @@ if (!(require(ggplot2))){install.packages("ggplot2"); require(ggplot2, quietly=T
 if (!(require(shinycssloaders))){install.packages("shinycssloaders")} 
 if (!(require(shinythemes))){install.packages("shinythemes")} 
 if (!(require(wordcloud2))){install.packages("wordcloud2")} 
-if (!require(colourpicker)){install.packages("colourpicker")}
+#if (!require(colourpicker)){install.packages("colourpicker")}
 #if (!require(treemap)){install.packages("treemap")}
 if (!require(ggmap)){install.packages("ggmap"); require(ggmap, quietly=TRUE)}
 if (!require(maps)){install.packages("maps"); require(maps, quietly=TRUE)}
@@ -59,7 +59,7 @@ ui <-  navbarPage("biblioshiny for bibliometrix",
                                  Its development can address a large and active community of developers formed by prominent researchers."),
                                br(),
                                p(em("bibliometrix"),"provides various routines for importing bibliographic data from SCOPUS, 
-                                 Clarivate Analytics' Web of Science, Dimensions, PubMed and Cochrane databases, performing bibliometric 
+                                 Clarivate Analytics' Web of Science, Dimensions, PubMed, Lens and Cochrane databases, performing bibliometric 
                                  analysis and building data matrices for co-citation, coupling, scientific collaboration analysis and co-word analysis."),
                                br(),
                                p("For an introduction and live examples, visit the ",
@@ -106,7 +106,8 @@ navbarMenu("Data",
                           choices = c(
                             " " = "null",
                             "Import raw file(s)" = "import",
-                            "Load bibliometrix file(s)" = "load"
+                            "Load bibliometrix file(s)" = "load",
+                            "Use a sample collection" = "demo"
                           ),
                           selected = "null"
                         ),
@@ -120,6 +121,7 @@ navbarMenu("Data",
                               "Web of Science (WoS/WoK)" = "isi",
                               "Scopus" = "scopus",
                               "Dimensions" = "dimensions",
+                              "Lens.org" = "lens",
                               "PubMed" = "pubmed",
                               "Cochrane Library" = "cochrane"
                             ),
@@ -127,7 +129,7 @@ navbarMenu("Data",
                           )
                         ),
                         conditionalPanel(
-                          condition = "input.load != 'null'",
+                          condition = "input.load != 'null' & input.load != 'demo'",
                           fileInput(
                             "file1",
                             "Choose a file",
@@ -353,6 +355,12 @@ navbarMenu("Dataset",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.ASPdpi != 'null'",
+                                                    sliderInput(
+                                                      'ASPh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("ASPplot.save", "Export plot as png"))
                                    
                                    ),
@@ -391,6 +399,12 @@ navbarMenu("Dataset",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.ACpYdpi != 'null'",
+                                                    sliderInput(
+                                                      'ACpYh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("ACpYplot.save", "Export plot as png"))
                       ),
                       mainPanel(
@@ -464,7 +478,8 @@ navbarMenu("Dataset",
                                    ),
                       mainPanel(
                         #tabPanel("Plot",
-                                 shinycssloaders::withSpinner(networkD3::sankeyNetworkOutput(outputId = "ThreeFielsPlot",height = "80vh")) #height = "600px"))
+                              shinycssloaders::withSpinner(plotlyOutput(outputId = "ThreeFieldsPlot", height = "90vh"))
+                                 #shinycssloaders::withSpinner(networkD3::sankeyNetworkOutput(outputId = "ThreeFielsPlot",height = "80vh")) #height = "600px"))
                         #            )
                       )
                     )
@@ -507,6 +522,12 @@ navbarMenu("Sources",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MRSdpi != 'null'",
+                                                    sliderInput(
+                                                      'MRSh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MRSplot.save", "Export plot as png"))
                                    ),
                       mainPanel(
@@ -552,6 +573,12 @@ navbarMenu("Sources",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MLCSdpi != 'null'",
+                                                    sliderInput(
+                                                      'MLCSh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MLCSplot.save", "Export plot as png"))
                       ),
                       mainPanel(
@@ -590,6 +617,12 @@ navbarMenu("Sources",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.BLdpi != 'null'",
+                                                    sliderInput(
+                                                      'BLh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("BLplot.save", "Export plot as png"))           
                       ),
                       mainPanel(
@@ -644,6 +677,12 @@ navbarMenu("Sources",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.SIdpi != 'null'",
+                                                    sliderInput(
+                                                      'SIh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("SIplot.save", "Export plot as png"))           
                       ),
                       mainPanel(
@@ -673,13 +712,13 @@ navbarMenu("Sources",
                                    selectInput("cumSO", "Occurrences",
                                                choices = c("Cumulate" = "Cum",
                                                            "Per year" = "noCum"),
-                                               selected = "noCum"),
-                                   selectInput("SOse", "Confidence Interval",
-                                               choices = c("Yes" = "Yes",
-                                                           "No" = "No"),
-                                               selected = "No"),
+                                               selected = "Cum"),
+                                   # selectInput("SOse", "Confidence Interval",
+                                   #             choices = c("Yes" = "Yes",
+                                   #                         "No" = "No"),
+                                   #             selected = "No"),
                                    hr(),
-                                   sliderInput("topSO", label = "Number of Sources", min = 1, max = 50, step = 1, value = 5),
+                                   sliderInput("topSO", label = "Number of Sources", min = 1, max = 50, step = 1, value = c(1,5)),
                                    br(),
                                    br(),
                                    br(),
@@ -698,6 +737,12 @@ navbarMenu("Sources",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.SDdpi != 'null'",
+                                                    sliderInput(
+                                                      'SDh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("SDplot.save", "Export plot as png"))       
                       ),
                       
@@ -705,7 +750,8 @@ navbarMenu("Sources",
                       mainPanel(
                         tabsetPanel(type = "tabs",
                                     tabPanel("Plot",
-                                             shinycssloaders::withSpinner(plotOutput(outputId = "soGrowthPlot"))
+                                             #shinycssloaders::withSpinner(plotOutput(outputId = "soGrowthPlot"))
+                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "soGrowthPlot", height = "90vh"))
                                     ),
                                     tabPanel("Table",
                                              shinycssloaders::withSpinner(DT::DTOutput(outputId = "soGrowthtable"))
@@ -759,6 +805,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MRAdpi != 'null'",
+                                                    sliderInput(
+                                                      'MRAh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MRAplot.save", "Export plot as png"))    
                       ),
                       mainPanel(
@@ -805,6 +857,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MLCAdpi != 'null'",
+                                                    sliderInput(
+                                                      'MLCAh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MLCAplot.save", "Export plot as png"))   
                       ),
                       mainPanel(
@@ -851,6 +909,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.APOTdpi != 'null'",
+                                                    sliderInput(
+                                                      'APOTh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("APOTplot.save", "Export plot as png"))   
                       ),
                       mainPanel(
@@ -894,6 +958,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.LLdpi != 'null'",
+                                                    sliderInput(
+                                                      'LLh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("LLplot.save", "Export plot as png"))   
                       ),
                       mainPanel(
@@ -948,6 +1018,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.AIdpi != 'null'",
+                                                    sliderInput(
+                                                      'AIh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("AIplot.save", "Export plot as png"))   
                       ),
                       mainPanel(
@@ -1004,6 +1080,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.AFFdpi != 'null'",
+                                                    sliderInput(
+                                                      'AFFh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("AFFplot.save", "Export plot as png"))  
                       ),
                       mainPanel(
@@ -1052,6 +1134,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MRCOdpi != 'null'",
+                                                    sliderInput(
+                                                      'MRCOh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MRCOplot.save", "Export plot as png"))  
                       ),
                       mainPanel(
@@ -1089,6 +1177,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.CSPdpi != 'null'",
+                                                    sliderInput(
+                                                      'CSPh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("CSPplot.save", "Export plot as png"))  
                       ),
                       mainPanel(
@@ -1141,6 +1235,12 @@ navbarMenu("Authors",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MCCdpi != 'null'",
+                                                    sliderInput(
+                                                      'MCCh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MCCplot.save", "Export plot as png"))  
                       ),
                       mainPanel(
@@ -1198,6 +1298,12 @@ navbarMenu("Documents",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MGCDdpi != 'null'",
+                                                    sliderInput(
+                                                      'MGCDh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MGCDplot.save", "Export plot as png"))  
                       ),
                       mainPanel(
@@ -1249,6 +1355,12 @@ navbarMenu("Documents",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MLCDdpi != 'null'",
+                                                    sliderInput(
+                                                      'MLCDh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MLCDplot.save", "Export plot as png"))  
                       ),
                       mainPanel(
@@ -1305,6 +1417,12 @@ navbarMenu("Documents",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MLCRdpi != 'null'",
+                                                    sliderInput(
+                                                      'MLCRh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MLCRplot.save", "Export plot as png"))  
                       ),
                       mainPanel(
@@ -1330,14 +1448,6 @@ navbarMenu("Documents",
                                    "  ",
                                    h4(em(strong("Parameters: "))),
                                    "  ",
-                                   # sliderInput("sliderYears",
-                                   #             label = "Timespan",
-                                   #             min = 1700,
-                                   #             max = as.numeric(substr(Sys.Date(),1,4)),
-                                   #             step = 10, sep="",
-                                   #             value = c(1700, as.numeric(substr(Sys.Date(),1,4)))
-                                   # ),
-                                   
                                    selectInput(inputId = "rpysSep", 
                                                label = "Field separator character", 
                                                choices = c(";" = ";", 
@@ -1362,6 +1472,12 @@ navbarMenu("Documents",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.RSdpi != 'null'",
+                                                    sliderInput(
+                                                      'RSh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("RSplot.save", "Export plot as png"))  
                                    
                       ),
@@ -1401,6 +1517,12 @@ navbarMenu("Documents",
                                                            "Titles" = "TI",
                                                            "Abstracts" = "AB"),
                                                selected = "ID"),
+                                   conditionalPanel(condition = "input.MostRelWords == 'AB' |input.MostRelWords == 'TI'",
+                                                    selectInput("MRWngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
                                    hr(),
                                    sliderInput("MostRelWordsN", label = "Number of words", min = 2, max = 50, step = 1, value = 10),
                                    br(),
@@ -1421,6 +1543,12 @@ navbarMenu("Documents",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.MRWdpi != 'null'",
+                                                    sliderInput(
+                                                      'MRWh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("MRWplot.save", "Export plot as png"))  
                                    
                       ),
@@ -1457,6 +1585,12 @@ navbarMenu("Documents",
                                                            "Titles" = "TI",
                                                            "Abstracts" = "AB"),
                                                selected = "ID"),
+                                   conditionalPanel(condition = "input.summaryTerms == 'AB' |input.summaryTerms == 'TI'",
+                                                    selectInput("summaryTermsngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
                                    hr(),
                                    sliderInput("n_words", label = "Number of words", min = 10, max = 200, step = 5, value = 50),
                                    selectInput("measure", "Word occurrence measure",
@@ -1482,7 +1616,7 @@ navbarMenu("Documents",
                                                choices = c("Random Dark" = "random-dark",
                                                            "Random Light" = "random-light"),
                                                selected = "random-dark"),
-                                   colourpicker::colourInput("wcBGCol", label= "Backgroud color",value="white", showColour = "background", returnName=TRUE),
+                                   #colourpicker::colourInput("wcBGCol", label= "Backgroud color",value="white", showColour = "background", returnName=TRUE),
                                    sliderInput("scale", label = "Font size", min=0.2,max=5,step=0.1,value=1),
                                    sliderInput("ellipticity", label = "Ellipticity", min=0,max=1,step=0.05,value=0.65),
                                    sliderInput("padding", label = "Padding", min = 0, max = 5, value = 1, step = 1),
@@ -1521,6 +1655,12 @@ navbarMenu("Documents",
                                                            "Titles" = "TI",
                                                            "Abstracts" = "AB"),
                                                selected = "ID"),
+                                   conditionalPanel(condition = "input.treeTerms == 'AB' |input.treeTerms == 'TI'",
+                                                    selectInput("treeTermsngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
                                    hr(),
                                    sliderInput("treen_words", label = "Number of words", min = 10, max = 200, step = 5, value = 50)
 
@@ -1562,13 +1702,16 @@ navbarMenu("Documents",
                                    selectInput("cumTerms", "Occurrences",
                                                choices = c("Cumulate" = "Cum",
                                                            "Per year" = "noCum"),
-                                               selected = "noCum"),
-                                   selectInput("se", "Confidence Interval",
-                                               choices = c("Yes" = "Yes",
-                                                           "No" = "No"),
-                                               selected = "No"),
+                                               selected = "Cum"),
+                                   conditionalPanel(condition = "input.growthTerms == 'AB' |input.growthTerms == 'TI'",
+                                                    selectInput("growthTermsngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
                                    hr(),
-                                   sliderInput("topkw", label = "Number of words", min = 1, max = 100, step = 1, value = c(1,10)),                                   br(),
+                                   sliderInput("topkw", label = "Number of words", min = 1, max = 100, step = 1, value = c(1,10)),                                   
+                                   br(),
                                    br(),
                                    br(),
                                    br(),
@@ -1587,6 +1730,12 @@ navbarMenu("Documents",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.WDdpi != 'null'",
+                                                    sliderInput(
+                                                      'WDh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("WDplot.save", "Export plot as png"))  
     
                       ),
@@ -1595,7 +1744,8 @@ navbarMenu("Documents",
                       mainPanel(
                         tabsetPanel(type = "tabs",
                                     tabPanel("Plot",
-                                             shinycssloaders::withSpinner(plotOutput(outputId = "kwGrowthPlot"))
+                                             #shinycssloaders::withSpinner(plotOutput(outputId = "kwGrowthPlot"))
+                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "kwGrowthPlot", height = "90vh")) #height = 700))
                                     ),
                                     tabPanel("Table",
                                              shinycssloaders::withSpinner(DT::DTOutput(outputId = "kwGrowthtable"))
@@ -1621,6 +1771,12 @@ navbarMenu("Documents",
                                                            "Titles" = "TI",
                                                            "Abstracts" = "AB"),
                                                selected = "ID"),
+                                   conditionalPanel(condition = "input.trendTerms == 'TI' | input.trendTerms == 'AB'",
+                                                    selectInput("trendTermsngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
                                    conditionalPanel(
                                      condition = "input.trendTerms == 'TI' | input.trendTerms == 'AB'",
                                      selectInput("trendStemming", label="Word Stemming",
@@ -1634,7 +1790,7 @@ navbarMenu("Documents",
                                    #uiOutput("trendMinFreq"),
                                    sliderInput("trendMinFreq", label = "Word Minimum Frequency", min = 0, max = 100, value = 5, step = 1),
                                    sliderInput("trendNItems", label = "N. of Words per Year", min = 1, max = 20, step = 1, value = 5),
-                                   sliderInput("trendSize", label = "Word label size", min = 0, max = 20, step = 1, value = 5),
+                                   #sliderInput("trendSize", label = "Word label size", min = 0, max = 20, step = 1, value = 5),
                                    br(),
                                    br(),
                                    br(),
@@ -1653,6 +1809,12 @@ navbarMenu("Documents",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.TTdpi != 'null'",
+                                                    sliderInput(
+                                                      'TTh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("TTplot.save", "Export plot as png"))  
                                    
                                    
@@ -1662,7 +1824,8 @@ navbarMenu("Documents",
                       mainPanel(
                         tabsetPanel(type = "tabs",
                                     tabPanel("Plot",
-                                             shinycssloaders::withSpinner(plotOutput(outputId = "trendTopicsPlot"))
+                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "trendTopicsPlot", height = "90vh")) #height = 700))
+                                             #shinycssloaders::withSpinner(plotOutput(outputId = "trendTopicsPlot"))
                                     ),
                                     tabPanel("Table",
                                              shinycssloaders::withSpinner(DT::DTOutput(outputId = "trendTopicsTable"))
@@ -1709,9 +1872,22 @@ navbarMenu("Coupling ",
                                                  choices = c("Yes" = TRUE,
                                                              "No" = FALSE),
                                                  selected = FALSE)),
+                                   selectInput("CMimpact", 
+                                               label = "Impact measure",
+                                               choices = c("Local Citation Score" = "local", 
+                                                           "Global Citation Score" = "global"),
+                                               selected = "local"),
+                                   selectInput("CMlabeling", 
+                                               label = "Cluster labeling by",
+                                               choices = c("None" = "none", 
+                                                           "Keyword Plus" = "ID",
+                                                           "Authors' keywords" = "DE",
+                                                           "Title terms" = "TI",
+                                                           "Abstract terms" = "AB"),
+                                               selected = "ID"),
                                    sliderInput("CMn", label="Number of Units",value=250,min=50,max=5000,step=10),
                                    sliderInput("CMfreq", label="Min Cluster Frequency (per thousand units)",value=5,min=1,max=100,step=1),
-                                   sliderInput("CMn.labels", label="Number of Labels (for each cluster)",value=1,min=1,max=5,step=1),
+                                   sliderInput("CMn.labels", label="Number of Labels (for each cluster)",value=3,min=1,max=10,step=1),
                                    sliderInput("sizeCM", label="Label size",value=0.3,min=0.0,max=1,step=0.05),
                                    
                                    br(),
@@ -1732,6 +1908,12 @@ navbarMenu("Coupling ",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.CMdpi != 'null'",
+                                                    sliderInput(
+                                                      'CMh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("CMplot.save", "Export plot as png"))
                       ),
                       mainPanel("Clustering by Coupling",
@@ -1771,22 +1953,33 @@ navbarMenu("Conceptual Structure",
                       sidebarPanel(width=3,
                                    h3(em(strong("Co-occurrence Network"))),
                                    br(),
-                         
                                    actionButton("applyCoc", "Apply!"),
-                                   downloadButton("network.coc", "Save Pajek"),
-                                   downloadButton("networkCoc.fig", "Save Fig"),
-                                   "  ",
-                                   "  ",
-                                   h4(em(strong("Network Parameters: "))),
-                                  "  ",
-                                  selectInput("field", 
-                                      label = "Field",
-                                      choices = c("Keywords Plus" = "ID", 
-                                                "Author's Keywords" = "DE",
-                                                "Titles" = "TI",
-                                                "Abstracts" = "AB"),
-                                      selected = "ID"),
-                        
+                                   br(),
+                                   br(),
+                                   #"  ",
+                                   #h4(em(strong("Network Parameters: "))),
+                                   selectInput("field", 
+                                               label = h4(em(strong("Field"))),
+                                               choices = c("Keywords Plus" = "ID", 
+                                                           "Author's Keywords" = "DE",
+                                                           "Titles" = "TI",
+                                                           "Abstracts" = "AB"),
+                                               selected = "ID"),
+                                   conditionalPanel(condition = "input.field == 'TI' | input.field == 'AB'",
+                                                    selectInput("cocngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
+                                   selectInput("cocNP", 
+                                               label = h4(em(strong("Network Parameters: "))),
+                                               choices = c("Hide Network Parameters" = "hide", 
+                                                           "Show Network Parameters" = "show"),
+                                               selected = "hide"),
+                                   conditionalPanel(condition = "input.cocNP == 'show'", 
+                                                    "  ",
+                                                    
+                        fluidRow(column(6,
                         selectInput("layout", 
                                     label = "Network Layout",
                                     choices = c("Automatic layout"="auto", 
@@ -1796,22 +1989,9 @@ navbarMenu("Conceptual Structure",
                                                 "MultiDimensional Scaling"="mds",
                                                 "Sphere"="sphere",
                                                 "Star"="star"),
-                                    selected = "auto"),
-                        
-                        selectInput("normalize", 
-                                    label = "Normalization",
-                                    choices = c("none", 
-                                                "association",
-                                                "jaccard", 
-                                                "salton",
-                                                "inclusion",
-                                                "equivalence"),
-                                    selected = "association"),
-                        selectInput("cocyears",
-                                    label = "Node Color by Year",
-                                    choices = c("No" = "No",
-                                                "Yes"= "Yes"),
-                                    selected = "No"),
+                                    selected = "auto")
+                        ),
+                        column(6,
                         selectInput("cocCluster", 
                                     label = "Clustering Algorithm",
                                     choices = c("None" = "none",
@@ -1821,81 +2001,140 @@ navbarMenu("Conceptual Structure",
                                                 "Louvain" = "louvain",
                                                 "Spinglass" = "spinglass",
                                                 "Walktrap" = "walktrap"),
-                                    selected = "louvain"),
-                        
-                        sliderInput(inputId = "Nodes",
-                                    label = "Number of Nodes",
-                                    min = 5,
-                                    max = 1000,
-                                    value = 50),
-                        
+                                    selected = "louvain")
+                        )),
+                        fluidRow(column(6,
+                        selectInput("normalize", 
+                                    label = "Normalization",
+                                    choices = c("none", 
+                                                "association",
+                                                "jaccard", 
+                                                "salton",
+                                                "inclusion",
+                                                "equivalence"),
+                                    selected = "association")
+                        ),
+                        column(6,
+                        selectInput("cocyears",
+                                    label = "Node Color by Year",
+                                    choices = c("No" = "No",
+                                                "Yes"= "Yes"),
+                                    selected = "No")
+                        )),
+                        fluidRow(column(6,
+                                        numericInput(inputId = "Nodes",
+                                                     label = "Number of Nodes",
+                                                     min = 5,
+                                                     max = 1000,
+                                                     value = 50,
+                                                     step = 1)
+                        ),
+                        column(6,
+                               numericInput(inputId = "coc.repulsion",
+                                            label = "Repulsion Force",
+                                            min = 0,
+                                            max = 1,
+                                            value = 0.1,
+                                            step = 0.1)
+                        )),
+                        fluidRow(column(6,
                         selectInput(inputId ="coc.isolates",
                                     label = "Remove Isolated Nodes",
                                     choices = c("Yes" = "yes",
                                                 "No" = "no"),
-                                    selected = "no"),
-                        
+                                    selected = "yes")
+                        ),
+                        column(6,
                         numericInput("edges.min", 
-                                     label=("Min edges"),
+                                     label=("Minimum Number of Edges"),
                                      value = 2,
                                      step = 1,
-                                     min = 0),
+                                     min = 0)
+                        )
+                        )),
                         #uiOutput("Focus"),
                         "  ",
-                        h4(em(strong("Graphical Parameters: "))),
+                        #h4(em(strong("Graphical Parameters: "))),
+                        #br(),
+                        selectInput("cocGP", 
+                                    label = h4(em(strong("Graphical Parameters: "))),
+                                    choices = c("Hide Graphical Parameters" = "hide", 
+                                                "Show Graphical Parameters" = "show"),
+                                    selected = "hide"),
+                        conditionalPanel(condition = "input.cocGP == 'show'",
                         "  ",
-                        sliderInput(inputId = "cocAlpha",
+                        fluidRow(column(6,
+                        numericInput(inputId = "cocAlpha",
                                     label = "Opacity",
                                     min = 0,
                                     max = 1,
                                     value = 0.7,
-                                    step=0.05),
-                        sliderInput(inputId = "Labels",
+                                    step=0.05)
+                        ),
+                        column(6,
+                        numericInput(inputId = "Labels",
                                     label = "Number of labels",
                                     min = 0,
                                     max = 1000,
-                                    value = 50),
+                                    value = 50,
+                                    step = 1)
+                        )),
+                        fluidRow(column(6,
                         selectInput(inputId ="label.cex",
                                     label = "Label cex",
                                     choices = c("Yes", 
                                                 "No"),
-                                    selected = "Yes"),
-                        
-                        sliderInput(inputId = "labelsize",
-                                    label = "Label size",
-                                    min = 0.0,
-                                    max = 20,
-                                    value = 6,
-                                    step = 0.10),
-                        
-                        selectInput(inputId ="coc.shape",
-                                    label = "Node Shape",
-                                    choices = c("Box"="box",
-                                                "Circle"="circle",
-                                                "Database"="database",
-                                                "Ellipse"="ellipse",
-                                                "Text"="text"),
-                                    selected = "box"),
-                        sliderInput(
+                                    selected = "Yes")
+                        ),
+                        column(6,
+                               selectInput(inputId ="coc.shape",
+                                           label = "Node Shape",
+                                           choices = c("Box"="box",
+                                                       "Circle"="circle",
+                                                       "Database"="database",
+                                                       "Ellipse"="ellipse",
+                                                       "Text"="text"),
+                                           selected = "box")
+                        )),
+                        fluidRow(column(6,
+                                        numericInput(inputId = "labelsize",
+                                                     label = "Label size",
+                                                     min = 0.0,
+                                                     max = 20,
+                                                     value = 6,
+                                                     step = 0.10)
+                        ),
+                        column(6,
+                        numericInput(
                           inputId = "edgesize",
                           label = "Edge size",
-                          min = 0.1,
+                          min = 0.5,
                           max = 20,
-                          value = 5), 
-                        
+                          value = 5,
+                          step=0.5)
+                        )), 
+                        fluidRow(column(6,
                         selectInput(inputId ="coc.curved",
                                     label = "Curved edges",
                                     choices = c("Yes",
                                                 "No"),
                                     selected = "No")
-                        
-                      
+                        ))
+                        ),
+                        fluidRow(column(6,
+                        downloadButton("network.coc", "Save Pajek")
+                        ),
+                        column(6,
+                        downloadButton("networkCoc.fig", "Save HTML")
+                        ))
                       ),
                     
                     mainPanel(
                       tabsetPanel(type = "tabs",
-                                  tabPanel("Map", 
+                                  tabPanel("Network Map", 
                                            shinycssloaders::withSpinner(visNetworkOutput("cocPlot", height = "80vh"))), #height = "750px",width = "1100px"))),
+                                  # tabPanel("Communities", 
+                                  #          shinycssloaders::withSpinner(visNetworkOutput("cocPlotComm", height = "80vh"))), #height = "750px",width = "1100px"))),
                                   tabPanel("Table", 
                                            shinycssloaders::withSpinner(DT::DTOutput(
                                              outputId = "cocTable"))),
@@ -1929,6 +2168,12 @@ navbarMenu("Conceptual Structure",
                                                            "Titles" = "TI",
                                                            "Abstracts" = "AB"),
                                                selected = "ID"),
+                                   conditionalPanel(condition = "input.TMfield == 'TI' | input.TMfield == 'AB'",
+                                                    selectInput("TMngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
                                    conditionalPanel(
                                      condition = "input.TMfield == 'TI' | input.TMfield == 'AB'",
                                      selectInput("TMstemming", label="Word Stemming",
@@ -1937,7 +2182,7 @@ navbarMenu("Conceptual Structure",
                                                  selected = FALSE)),
                                    sliderInput("TMn", label="Number of Words",value=250,min=50,max=5000,step=10),
                                    sliderInput("TMfreq", label="Min Cluster Frequency (per thousand docs)",value=5,min=1,max=100,step=1),
-                                   sliderInput("TMn.labels", label="Number of Labels (for each cluster)",value=1,min=1,max=5,step=1),
+                                   sliderInput("TMn.labels", label="Number of Labels (for each cluster)",value=3,min=0,max=10,step=1),
                                    sliderInput("sizeTM", label="Label size",value=0.3,min=0.0,max=1,step=0.05),
                                    
                                    br(),
@@ -1958,6 +2203,12 @@ navbarMenu("Conceptual Structure",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.TMdpi != 'null'",
+                                                    sliderInput(
+                                                      'TMh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                    downloadButton("TMplot.save", "Export plot as png"))
                       ),
                       mainPanel("Thematic Map",
@@ -1995,8 +2246,15 @@ navbarMenu("Conceptual Structure",
                                                choices = c("Keywords Plus" = "ID", 
                                                            "Author's Keywords" = "DE",
                                                            "Titles" = "TI",
-                                                           "Abstracts" = "AB"),
+                                                           "Abstracts
+                                                           " = "AB"),
                                                selected = "ID"),
+                                   conditionalPanel(condition = "input.TEfield == 'TI' | input.TEfield == 'AB'",
+                                                    selectInput("TEngrams",'N-Grams',
+                                                                choices = c("Unigrams" = "1",
+                                                                            "Bigrams" = "2",
+                                                                            "Trigrams" = "3"),
+                                                                selected = 1)),
                                    
                                    sliderInput("nTE", label="Number of Words",value=250,min=50,max=5000,step=10),
                                    sliderInput("fTE", label="Min Cluster Frequency (per thousand docs)",value=5,min=1,max=100,step=1),
@@ -2023,7 +2281,8 @@ navbarMenu("Conceptual Structure",
                                 tabsetPanel(type = "tabs",
                                             tabPanel("Thematic Evolution", tabsetPanel(type="tabs",
                                               tabPanel("Map",
-                                                       shinycssloaders::withSpinner(networkD3::sankeyNetworkOutput(outputId = "TEPlot", height = "80vh"))  #height = "600px"))
+                                                       #shinycssloaders::withSpinner(networkD3::sankeyNetworkOutput(outputId = "TEPlot", height = "80vh"))  #height = "600px"))
+                                                       shinycssloaders::withSpinner(plotlyOutput(outputId = "TEPlot", height = "80vh"))
                                                       ),
                                               tabPanel("Table",
                                                        shinycssloaders::withSpinner(DT::DTOutput(outputId = "TETable"))
@@ -2142,6 +2401,12 @@ navbarMenu("Conceptual Structure",
                                                 "Titles" = "TI",
                                                 "Abstracts" = "AB"),
                                     selected = "ID"),
+                        conditionalPanel(condition = "input.CSfield == 'TI' | input.CSfield == 'AB'",
+                                         selectInput("CSngrams",'N-Grams',
+                                                     choices = c("Unigrams" = "1",
+                                                                 "Bigrams" = "2",
+                                                                 "Trigrams" = "3"),
+                                                     selected = 1)),
                         
                         numericInput("CSn", 
                                      label=("Number of terms"), 
@@ -2191,6 +2456,12 @@ navbarMenu("Conceptual Structure",
                           selected = "null"
                         ),
                         conditionalPanel(condition = "input.FAdpi != 'null'",
+                                         sliderInput(
+                                           'FAh',
+                                           h4(em(strong(
+                                             "Height (in inches)"
+                                           ))),
+                                           value = 7, min = 1, max = 20, step = 1),
                                          downloadButton("FA1plot.save", "Term Factorial Map "),
                                          h4(" "),
                                          downloadButton("FA2plot.save", "Topic Dendrogram "),
@@ -2284,6 +2555,11 @@ navbarMenu("Intellectual Structure",
                                                 "Spinglass" = "spinglass",
                                                 "Walktrap" = "walktrap"),
                                     selected = "louvain"),
+                        sliderInput(inputId = "cocit.repulsion",
+                                    label = "Cluster Repulsion Force",
+                                    min = 0,
+                                    max = 1,
+                                    value = 0.1),
                         
                         sliderInput(inputId = "citNodes",
                                     label = "Number of Nodes",
@@ -2435,17 +2711,22 @@ navbarMenu("Intellectual Structure",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.HGdpi != 'null'",
+                                                    sliderInput(
+                                                      'HGh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("HGplot.save", "Export plot as png"))  
                                    
                                   ),
                       mainPanel(
                         tabsetPanel(type = "tabs",
                                     tabPanel("Graph", 
-                                             shinycssloaders::withSpinner(plotOutput(
-                                      outputId = "histPlot"))),
+                                             #shinycssloaders::withSpinner(plotOutput(outputId = "histPlot"))),
+                                             shinycssloaders::withSpinner(plotlyOutput(outputId = "histPlot", height = "80vh"))),
                                     tabPanel("Table", 
-                                             shinycssloaders::withSpinner(DT::DTOutput(
-                                      outputId = "histTable")))
+                                             shinycssloaders::withSpinner(DT::DTOutput(outputId = "histTable")))
                         )
                       )
                         
@@ -2512,6 +2793,12 @@ navbarMenu("Social Structure",
                                                            "Spinglass" = "spinglass",
                                                            "Walktrap" = "walktrap"),
                                                selected = "louvain"),
+                                   
+                                   sliderInput(inputId = "col.repulsion",
+                                               label = "Cluster Repulsion Force",
+                                               min = 0,
+                                               max = 1,
+                                               value = 0.1),
                                    
                                    sliderInput(inputId = "colNodes",
                                                label = "Number of Nodes",
@@ -2639,6 +2926,12 @@ navbarMenu("Social Structure",
                                      selected = "null"
                                    ),
                                    conditionalPanel(condition = "input.CCdpi != 'null'",
+                                                    sliderInput(
+                                                      'CCh',
+                                                      h4(em(strong(
+                                                        "Height (in inches)"
+                                                      ))),
+                                                      value = 7, min = 1, max = 20, step = 1),
                                                     downloadButton("CCplot.save", "Export plot as png"))  
                       ),
                       mainPanel(

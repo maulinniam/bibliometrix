@@ -12,9 +12,9 @@
 #'
 #' @examples
 #'  
-#' data(isiCollection)
+#' data(isiCollection, package = "bibliometrixData")
 #' 
-#' data(scopusCollection)
+#' data(scopusCollection, package = "bibliometrixData")
 #' 
 #' M <- mergeDbSources(isiCollection, scopusCollection, remove.duplicated=TRUE)
 #' 
@@ -78,5 +78,6 @@ mergeDbSources <- function(...,remove.duplicated=TRUE){
     cat("\n",sum(d),"duplicated documents have been removed\n")
     M=M[!d,]
   }
+  class(M) <- c("bibliometrixDB", "data.frame")
   return(M)
 }

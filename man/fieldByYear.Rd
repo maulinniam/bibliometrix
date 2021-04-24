@@ -8,9 +8,10 @@ fieldByYear(
   M,
   field = "ID",
   timespan = NULL,
-  min.freq = 1,
+  min.freq = 2,
   n.items = 5,
-  labelsize = 5,
+  labelsize = NULL,
+  dynamic.plot = FALSE,
   graph = TRUE
 )
 }
@@ -26,7 +27,9 @@ standard ISI WoS Field Tag codify.}
 
 \item{n.items}{is an integer. I indicates the maximun number of items per year to include in the plot.}
 
-\item{labelsize}{is an integer. It indicates the label size in the plot. Default is \code{labelsize=5}.}
+\item{labelsize}{is deprecated argument. It will be removed in the next update.}
+
+\item{dynamic.plot}{is a logical. If TRUE plot aesthetics are optimized for plotly package.}
 
 \item{graph}{is logical. If TRUE the function plots Filed Tag distribution by Year graph. Default is \code{graph = TRUE}.}
 }
@@ -41,7 +44,7 @@ The function \code{fieldByYear} returns a list containing threeobjects:
 It calculates the median year for each item of a field tag.
 }
 \examples{
-data(management)
+data(management, package = "bibliometrixData")
 timespan=c(2005,2015)
 res <- fieldByYear(management, field = "ID", timespan = timespan, 
                     min.freq = 5, n.items = 5, graph = TRUE)
